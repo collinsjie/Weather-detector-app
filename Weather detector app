@@ -1,0 +1,78 @@
+"""
+Weather detection using Django typically involves integrating weather APIs or weather data sources with a Django web application to provide real-time weather information to users. Here's a description of the process:
+
+Django Setup: It began  by setting up a Django project and creating the necessary Django app(s) within it. This involves installing Django, creating a new project, and defining the app structure.
+
+Weather API Integration: Choose a reliable weather API provider that offers weather data for my desired locations. I signed up for an API key to access their services. I used https://openweathermap.org/ for my API source. I consult the API documentation to understand the available endpoints and how to retrieve weather data.
+
+Django Models: Define Django models to store weather-related data, such as location, temperature, humidity, wind speed, etc. These models will be used to store retrieved weather data from the API.
+Django Views and Templates: Create Django views and templates to display weather information. For example, you can create a view that fetches weather data from the API, processes it, and renders a template that displays the weather information to the user.
+
+API Requests: Use Django's built-in HTTP libraries or popular Python libraries like Requests to send API requests to the weather API using the API key obtained earlier. Construct the API request with appropriate parameters such as location, date, and units (metric, imperial, etc.).
+
+Data Processing: Once the weather API responds with the requested data, I  process the received JSON  response in Django. Extract relevant information, such as temperature, humidity, or wind speed, and store it in the Django models created earlier.
+
+User Interaction: Design the user interface in Django templates to allow users to input their desired location
+Error Handling: Implement error handling in case the weather API request fails or returns unexpected data. It  can display appropriate error messages to the user or fallback to default values when encountering errors.
+
+Caching: To optimize performance and reduce API calls, I consider implementing caching mechanisms within Django. Caching weather data can help minimize the number of API requests, especially when displaying weather information for the same location frequently.
+
+Deployment: The deployment of the Django application to a cloud platform is currently ongoing.
+"""
+
+Edit urls.py file in weather :
+
+from django.contrib import admin
+from django.urls import path, include
+  
+  
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('main.urls')),
+]
+edit urls.py file in main :
+
+from django.urls import path
+from . import views
+  
+urlpatterns = [
+         path('', views.index),
+]
+
+edit views.py in main :
+
+from django.shortcuts import render
+# import json to load json data to python dictionary
+import json
+# urllib.request to make a request to api
+import urllib.request
+  
+  
+def index(request):
+    if request.method == 'POST':
+        city = request.POST['city']
+        ''' api key might be expired use your own api_key
+            place api_key in place of appid ="your_api_key_here "  '''
+  
+        # source contain JSON data from API
+  
+        source = urllib.request.urlopen(
+            'http://api.openweathermap.org/data/2.5/weather?q =' 
+                    + city + '&appid = your_api_key_here').read()
+  
+        # converting JSON data to a dictionary
+        list_of_data = json.loads(source)
+  
+        # data for variable list_of_data
+        data = {
+            "country_code": str(list_of_data['sys']['country']),
+            "coordinate": str(list_of_data['coord']['lon']) + ' '
+                        + str(list_of_data['coord']['lat']),
+            "temp": str(list_of_data['main']['temp']) + 'k',
+            "pressure": str(list_of_data['main']['pressure']),
+            "humidity": str(list_of_data['main']['humidity']),
+        }
+        print(data)
+    else:
+        data ={}
+    return render(request, "main/index.html", data)
